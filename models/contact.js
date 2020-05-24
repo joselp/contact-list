@@ -4,9 +4,7 @@ const validator = require('validator')
 var schema = mongoose.Schema({
     owner: {
         type: String,
-        trim: true,
-        unique: true,
-        index: true
+        trim: true
     },
     firstName: {
         type: String,
@@ -22,8 +20,6 @@ var schema = mongoose.Schema({
         type: String,
         trim: true,
         lowercase: true,
-        unique: true,
-        index: true,
         validate(value) {
             if (!validator.isEmail(value)) {
                 throw new Error('Email is invalid')
@@ -33,17 +29,15 @@ var schema = mongoose.Schema({
     phoneNumber: {
         type: String,
         trim: true,
-        unique: true,
-        index: true,
         validate(value) {
-            if (!validate.isMobilePhone(value)) {
-                throw new Error('Email is invalid')
+            if (!validator.isMobilePhone(value, "any")) {
+                throw new Error('Phone number is invalid')
             }
         }
     },
     lastUpdate: {
         type: Date,
-        default: Date.now
+        default: Date.now()
     },
     customData: {
         type: Map
@@ -58,6 +52,24 @@ schema.method("toJSON", function () {
 });
 */
 
+schema.index({ owner: 1, email: 1 }, {
+    unique: true,
+    partialFilterExpression: {
+        'email': { $exists: true }
+    }
+});
+
+schema.index({ owner: 1, phoneNumber: 1 }, {
+    unique: true,
+    partialFilterExpression: {
+        'phoneNumber': { $exists: true }
+    }
+});
+
+schema.set('autoIndex', false);
+
 const Contact = mongoose.model('Contact', schema)
+
+Contact.ensureIndexes();
 
 module.exports = Contact
