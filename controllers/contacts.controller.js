@@ -5,8 +5,7 @@ const { validationResult } = require('express-validator');
 const { validateUpdate } = require('./contacts.validator')
 
 exports.create = async (req, res) => {
-  const { email, phoneNumber } = req.body;
-
+  
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).send(new Exception(errors.array()));
@@ -32,12 +31,12 @@ exports.update = async (req, res) => {
     return res.status(400).send(new Exception(errors.array()));
   }
 
-  const { email, phoneNumber, owner } = req.query;
+  //const { email, phoneNumber } = req.query;
 
-  if(!validateUpdate(owner, phoneNumber, email)) {
+  /*if(!validateUpdate(owner, phoneNumber, email)) {
     res.status(400).send(new Exception("Must provide an email or phoneNumber"));
     return;
-  }
+  }*/
 
   const { filter } = aqp(req.query);
   
@@ -63,6 +62,17 @@ exports.findAll = async (req, res) => {
     const contacts = await Contact.find(filter)
       .skip(skip)
       .limit(limit)
+
+    res.send(contacts)
+  } catch (e) {
+    res.status(500).send()
+  }
+}
+
+exports.delete = async (req, res) => {
+  try {
+    const { filter } = aqp(req.query);
+    const contacts = await Contact.findOneAndDelete(filter);
 
     res.send(contacts)
   } catch (e) {
